@@ -5,7 +5,7 @@ import os
 import logging
 import requests
 from flask import Flask
-from #flask_wtf import csrf
+#from flask_wtf import csrf
 from flask import jsonify, send_file, Response, after_this_request
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -252,8 +252,7 @@ def after_request(response):
     return response
 
 @app.route('/api/logout', methods=['POST'])
-@jwt_required
-@csrf.exempt
+#@jwt_required
 def logout():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - logout(): Request received')
@@ -270,8 +269,7 @@ def logout():
 
 
 @app.route('/api/listchildnodes', methods=['POST'])
-@jwt_required
-@csrf.exempt
+#@jwt_required
 def list_child_nodes():
     try:
         
