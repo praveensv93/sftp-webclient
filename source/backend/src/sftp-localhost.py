@@ -5,7 +5,7 @@ import os
 import logging
 import requests
 from flask import Flask
-from flask_wtf import csrf
+#from flask_wtf import csrf
 from flask import jsonify, send_file, Response, after_this_request
 from flask_cors import CORS, cross_origin
 from flask_jwt_extended import (
@@ -131,6 +131,7 @@ app.config['kms_key_id'] = kms_key_id
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024    # 100 Mb limit
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 app.config['JWT_TOKEN_LOCATION'] = config_data['JWT_TOKEN_LOCATION']
+app.config['WTF_CSRF_ENABLED'] = False
 # Set the cookie paths, so that you are only sending your access token
 # cookie to the access endpoints, and only sending your refresh token
 # to the refresh endpoint.
@@ -269,7 +270,6 @@ def refresh_expiring_jwts(response):
 
 @app.route('/api/logout', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def logout():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - logout(): Request received')
@@ -287,7 +287,6 @@ def logout():
 
 @app.route('/api/listchildnodes', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def list_child_nodes():
     try:
         
@@ -347,7 +346,6 @@ def list_child_nodes():
 
 @app.route('/api/numberofchildnodes', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def number_of_child_nodes():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - number_of_child_nodes(): Request received')
@@ -383,7 +381,6 @@ def number_of_child_nodes():
 # SFTP Upload operation
 @app.route('/api/upload', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def upload():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - upload(): Upload file request received')
@@ -460,7 +457,6 @@ def upload():
 
 @app.route('/api/download', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def download():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - download(): Request received')
@@ -527,7 +523,6 @@ def download():
 
 @app.route('/api/delete', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def delete():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - delete(): Request received')
@@ -563,7 +558,6 @@ def delete():
 
 @app.route('/api/rename', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def rename():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - rename(): Request received')
@@ -614,7 +608,6 @@ def rename():
 
 @app.route('/api/createfolder', methods=['POST'])
 @jwt_required
-@csrf.exempt
 def create_folder():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - create_folder(): Request received')
