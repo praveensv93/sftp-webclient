@@ -5,9 +5,8 @@ import os
 import logging
 import requests
 from flask import Flask
-from flask_wtf import csrf
 from flask import jsonify, send_file, Response, after_this_request
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager, jwt_required,get_jwt_identity, create_access_token, set_access_cookies, unset_jwt_cookies, get_raw_jwt
 )
@@ -131,7 +130,6 @@ app.config['kms_key_id'] = kms_key_id
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024    # 100 Mb limit
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 app.config['JWT_TOKEN_LOCATION'] = config_data['JWT_TOKEN_LOCATION']
-app.config['WTF_CSRF_ENABLED'] = False
 # Set the cookie paths, so that you are only sending your access token
 # cookie to the access endpoints, and only sending your refresh token
 # to the refresh endpoint.
@@ -139,8 +137,8 @@ app.config['JWT_ACCESS_COOKIE_PATH'] = config_data['JWT_ACCESS_COOKIE_PATH']
 app.config['JWT_REFRESH_COOKIE_PATH'] = config_data['JWT_REFRESH_COOKIE_PATH']
 app.config['JWT_COOKIE_CSRF_PROTECT'] = config_data['JWT_COOKIE_CSRF_PROTECT']
 app.config['JWT_CSRF_IN_COOKIES'] = config_data['JWT_CSRF_IN_COOKIES']
-#app.config['JWT_COOKIE_DOMAIN'] = '' # e.g. mycompanydomain.com
-#app.config['front_end_CORS_origin'] = '*'      # e.g. https://ui.mycompanydomain.com
+app.config['JWT_COOKIE_DOMAIN'] = config_data['JWT_COOKIE_DOMAIN'] # e.g. mycompanydomain.com
+app.config['front_end_CORS_origin'] = config_data['front_end_CORS_origin']      # e.g. https://ui.mycompanydomain.com
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config_data['JWT_ACCESS_TOKEN_EXPIRES']
 # Set the secret key to sign the JWTs with
 app.config['JWT_SECRET_KEY'] = jwt_secret_key
@@ -193,7 +191,7 @@ def health_check():
         return bad_request("Bad or Invalid Request", 500)  # Internal Server Error
 
 @app.route('/api/isconnected', methods=['GET',])
-@csrf.exempt
+@jwt_required
 def isconnected():
     response = jsonify({'message': "API is connected."})
     # logger.debug(f'isconnected(): response: {response}')
@@ -202,8 +200,7 @@ def isconnected():
     return response
 
 @app.route('/api/authenticate', methods=['POST', 'OPTIONS'])
-@cross_origin(origin='*', supports_credentials=True)
-@csrf.exempt
+@cross_origin(supports_credentials=True)
 def authenticate():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - authenticate(): Request received')
@@ -270,7 +267,7 @@ def refresh_expiring_jwts(response):
         return response
 
 @app.route('/api/logout', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def logout():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - logout(): Request received')
@@ -287,7 +284,7 @@ def logout():
 
 
 @app.route('/api/listchildnodes', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def list_child_nodes():
     try:
         
@@ -346,7 +343,7 @@ def list_child_nodes():
         return bad_request("Bad or Invalid Request", 500)
 
 @app.route('/api/numberofchildnodes', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def number_of_child_nodes():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - number_of_child_nodes(): Request received')
@@ -381,7 +378,7 @@ def number_of_child_nodes():
 
 # SFTP Upload operation
 @app.route('/api/upload', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def upload():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - upload(): Upload file request received')
@@ -457,7 +454,7 @@ def upload():
         return bad_request(e.description, 500)
 
 @app.route('/api/download', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def download():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - download(): Request received')
@@ -523,7 +520,7 @@ def download():
         return bad_request("Bad or Invalid Request", 500)
 
 @app.route('/api/delete', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def delete():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - delete(): Request received')
@@ -558,7 +555,7 @@ def delete():
         return bad_request("Bad or Invalid Request", 500)
 
 @app.route('/api/rename', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def rename():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - rename(): Request received')
@@ -608,7 +605,7 @@ def rename():
 
 
 @app.route('/api/createfolder', methods=['POST'])
-@csrf.exempt
+@jwt_required
 def create_folder():
     try:
         logger.info(f'TaskID: {fargate_task_id}(PID:{pid}) - create_folder(): Request received')
